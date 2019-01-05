@@ -11,6 +11,7 @@ void ofApp::setup(){
     playerGrid.y = 5;
 }
 
+//test change
 //to do:
 //    *player movement
 //    *seed options
