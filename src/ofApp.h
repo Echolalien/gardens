@@ -22,11 +22,18 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
         void drawPlaySpace();
+        void parseInput();
+        void joystickDebug();
 
         float sqSize;
         int sqCount;
         ofVec2f playerPos;
         ofVec2f grid;
         ofVec2f playerGrid;
+        float walkDelay;
+        ofVec2f joystick;
+
+        bool keyIsDown[400];
+        float delayCool;
 
 };

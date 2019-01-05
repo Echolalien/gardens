@@ -7,13 +7,13 @@ void ofApp::setup(){
     sqCount = 10;
     grid.x=ofGetWidth()/2-sqSize*sqCount/2;
     grid.y=ofGetHeight()/2-sqSize*sqCount/2;
-    playerGrid.x = 3;
-    playerGrid.y = 5;
+    playerGrid.x = 0;
+    playerGrid.y = 0;
+    walkDelay = 100;
 }
 
-//test change
 //to do:
-//    *player movement
+//    *player movement TICK
 //    *seed options
 //    *water button
 //    *animations
@@ -25,9 +25,11 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
+    parseInput();
+
     //grid movement
-    playerPos.x = grid.x + playerGrid.x*sqSize/2 + sqSize/4;
-    playerPos.y = grid.y + playerGrid.y*sqSize/2;
+    playerPos.x = grid.x + playerGrid.x*sqSize + sqSize*0.3;
+    playerPos.y = grid.y + playerGrid.y*sqSize + sqSize*0.7;
 }
 
 //--------------------------------------------------------------
@@ -40,8 +42,10 @@ void ofApp::draw(){
         ofFill();
         ofDrawCircle(playerPos.x, playerPos.y, 10);
     ofPopStyle();
-}
 
+    joystickDebug();
+
+}
 //--------------------------------------------------------------
 void ofApp::drawPlaySpace(){
     //playspace
@@ -65,13 +69,59 @@ void ofApp::drawPlaySpace(){
 }
 
 //--------------------------------------------------------------
+void ofApp::parseInput(){
+    //input parsing
+    if(delayCool<=0){
+
+        if(keyIsDown[356]==1 && playerGrid.x>0){
+            playerGrid.x-=1;
+        }
+        else if(keyIsDown[358]==1 && playerGrid.x<sqCount-1){
+            playerGrid.x+=1;
+        }
+
+        if(keyIsDown[357]==1 && playerGrid.y>0){
+            playerGrid.y-=1;
+        }
+        else if(keyIsDown[359]==1 && playerGrid.y<sqCount-1){
+            playerGrid.y+=1;
+        }
+
+        delayCool=walkDelay;
+    }
+    else{
+        delayCool--;
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::joystickDebug(){
+
+    //joystick feedback
+    if(keyIsDown[356] == 1){
+        ofDrawBitmapString("<", 20,10);
+    }
+    if(keyIsDown[358] == 1){
+        ofDrawBitmapString(">", 10,10);
+    }
+    if(keyIsDown[357] == 1){
+        ofDrawBitmapString("^", 30,10);
+    }
+    if(keyIsDown[359] == 1){
+        ofDrawBitmapString("V", 40, 10);
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 
+    cout << key << endl;
+    keyIsDown[key] = true;
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+    keyIsDown[key] = false;
 }
 
 //--------------------------------------------------------------
