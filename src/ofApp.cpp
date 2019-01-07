@@ -117,11 +117,20 @@ void ofApp::keyPressed(int key){
 
     cout << key << endl;
     keyIsDown[key] = true;
+    if(key >57000){
+        keyIsDown[key-57000] = true;
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
     keyIsDown[key] = false;
+    if(key == 97){
+        keyIsDown[356]=0;
+    }
+    if(key >57000){
+        keyIsDown[key-57000] = false;
+    }
 }
 
 //--------------------------------------------------------------
