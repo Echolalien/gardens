@@ -7,8 +7,8 @@ void ofApp::setup(){
     sqCount = 10;
     grid.x=ofGetWidth()/2-sqSize*sqCount/2;
     grid.y=ofGetHeight()/2-sqSize*sqCount/2;
-    playerGrid.x = 0;
-    playerGrid.y = 0;
+    playerGridX = 0;
+    playerGridY = 0;
     walkDelay = 100;
 }
 
@@ -28,8 +28,8 @@ void ofApp::update(){
     parseInput();
 
     //grid movement
-    playerPos.x = grid.x + playerGrid.x*sqSize + sqSize*0.3;
-    playerPos.y = grid.y + playerGrid.y*sqSize + sqSize*0.7;
+    playerPos.x = grid.x + playerGridX*sqSize + sqSize*0.3;
+    playerPos.y = grid.y + playerGridY*sqSize + sqSize*0.7;
 }
 
 //--------------------------------------------------------------
@@ -46,6 +46,15 @@ void ofApp::draw(){
     joystickDebug();
 
 }
+
+//--------------------------------------------------------------
+void ofApp::plantSeed(int x, int y){
+    if(hasSeed[x][y]==false){
+        seeds.push_back(seed(x, y));
+        hasSeed[x][y]=true;
+    }
+}
+
 //--------------------------------------------------------------
 void ofApp::drawPlaySpace(){
     //playspace
@@ -73,18 +82,18 @@ void ofApp::parseInput(){
     //input parsing
     if(delayCool<=0){
 
-        if(keyIsDown[356]==1 && playerGrid.x>0){
-            playerGrid.x-=1;
+        if(keyIsDown[356]==1 && playerGridX>0){
+            playerGridX-=1;
         }
-        else if(keyIsDown[358]==1 && playerGrid.x<sqCount-1){
-            playerGrid.x+=1;
+        else if(keyIsDown[358]==1 && playerGridX<sqCount-1){
+            playerGridX+=1;
         }
 
-        if(keyIsDown[357]==1 && playerGrid.y>0){
-            playerGrid.y-=1;
+        if(keyIsDown[357]==1 && playerGridY>0){
+            playerGridY-=1;
         }
-        else if(keyIsDown[359]==1 && playerGrid.y<sqCount-1){
-            playerGrid.y+=1;
+        else if(keyIsDown[359]==1 && playerGridY<sqCount-1){
+            playerGridY+=1;
         }
 
         delayCool=walkDelay;

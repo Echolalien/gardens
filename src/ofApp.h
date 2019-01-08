@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "seed.h"
 
 class ofApp : public ofBaseApp{
 
@@ -24,16 +25,21 @@ class ofApp : public ofBaseApp{
         void drawPlaySpace();
         void parseInput();
         void joystickDebug();
+        void plantSeed(int x, int y);
 
         float sqSize;
         int sqCount;
         ofVec2f playerPos;
         ofVec2f grid;
-        ofVec2f playerGrid;
         float walkDelay;
         ofVec2f joystick;
 
+        //change if sqcount changes!
+        bool hasSeed [10][10];
+        int playerGridX;
+        int playerGridY;
         bool keyIsDown[400];
         float delayCool;
 
+        vector<seed> seeds;
 };
