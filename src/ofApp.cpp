@@ -43,6 +43,11 @@ void ofApp::draw(){
         ofDrawCircle(playerPos.x, playerPos.y, 10);
     ofPopStyle();
 
+    //seeds
+    for(int i = 0; i<seeds.size(); i++){
+        seeds[i].draw();
+    }
+
     joystickDebug();
 
 }
@@ -50,7 +55,7 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::plantSeed(int x, int y){
     if(hasSeed[x][y]==false){
-        seeds.push_back(seed(x, y));
+        seeds.push_back(seed(x, y, grid, sqSize));
         hasSeed[x][y]=true;
     }
 }
@@ -100,6 +105,10 @@ void ofApp::parseInput(){
     }
     else{
         delayCool--;
+    }
+
+    if(keyIsDown[32]==1){
+        plantSeed(playerGridX, playerGridY);
     }
 }
 
