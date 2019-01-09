@@ -14,18 +14,25 @@ void ofApp::setup(){
 
 //to do:
 //    *player movement TICK
-//    *seed options
+//    *seed options -decided seeds should be random (maybe with SOME choice? maybe same button for plant or water...)
+//    *plant growth function
 //    *water button
+//    *dig up button
 //    *animations
 //    *lil house
 //    *move to house
 //    *social metrics
-
+//    *propagating seeds function
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
     parseInput();
+
+    //seeds
+    for(int i = 0; i<seeds.size(); i++){
+        seeds[i].update();
+    }
 
     //grid movement
     playerPos.x = grid.x + playerGridX*sqSize + sqSize*0.3;
@@ -56,6 +63,7 @@ void ofApp::draw(){
 void ofApp::plantSeed(int x, int y){
     if(hasSeed[x][y]==false){
         seeds.push_back(seed(x, y, grid, sqSize));
+        seeds[seeds.size()-1].plant();
         hasSeed[x][y]=true;
     }
 }
