@@ -31,6 +31,27 @@ void ofApp::update(){
 
     //seeds
     for(int i = 0; i<seeds.size(); i++){
+        int xPos = seeds[i].pos.x;
+        int yPos = seeds[i].pos.y;
+        if(seeds[i].age>600){
+            for(int k = xPos-1; k<=xPos+1; k++){
+                for(int j = yPos-1; j<=yPos+1; j++){
+                    if(k>=0 && j>=0 && k<sqCount && j<sqCount){
+                        if(hasSeed[k][j] == false && ofRandom(10000)>9993){
+                            seeds.push_back(seed(k, j, grid, sqSize));
+                            seeds[seeds.size()-1].child(seeds[i].stems, seeds[i].size, seeds[i].colour, seeds[i].petals, seeds[i].shape);
+                            hasSeed[k][j] = true;
+                        }
+                    }
+                }
+            }
+        }
+        if(seeds[i].health<=0){
+            int x = seeds[i].pos.x;
+            int y = seeds[i].pos.y;
+            hasSeed[x][y]=false;
+            seeds.erase(seeds.begin()+i);
+        }
         seeds[i].update();
     }
 
@@ -65,6 +86,13 @@ void ofApp::plantSeed(int x, int y){
         seeds.push_back(seed(x, y, grid, sqSize));
         seeds[seeds.size()-1].plant();
         hasSeed[x][y]=true;
+    }
+    else{
+        for(int i = 0; i<seeds.size(); i++){
+            if(seeds[i].pos.x == x && seeds[i].pos.y == y){
+                seeds[i].health = 255;
+            }
+        }
     }
 }
 
