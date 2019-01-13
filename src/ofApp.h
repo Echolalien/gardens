@@ -26,6 +26,9 @@ class ofApp : public ofBaseApp{
         void parseInput();
         void joystickDebug();
         void plantSeed(int x, int y);
+        void seedUpdate();
+        void rain(int x, int y);
+        void drawPlayer();
 
         float sqSize;
         int sqCount;
@@ -40,6 +43,11 @@ class ofApp : public ofBaseApp{
         int playerGridY;
         bool keyIsDown[400];
         float delayCool;
-
+        float rainCycle;
+        float rainCycle2 = 4;
         vector<seed> seeds;
+
+        float contact = 10;
+        float approval = 10;
+        float lonelyTime = 0;
 };

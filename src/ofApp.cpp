@@ -15,49 +15,35 @@ void ofApp::setup(){
 //to do:
 //    *player movement TICK
 //    *seed options -decided seeds should be random (maybe with SOME choice? maybe same button for plant or water...)
-//    *plant growth function
-//    *water button
-//    *dig up button
-//    *animations
-//    *lil house
-//    *move to house
+//    *plant growth function - maybe later
+//    *water button - done, no animation yet
+//    *dig up button - just let them die
+//    *animations - lol
+//    *lil house - lol
+//    *move to house - lol
 //    *social metrics
-//    *propagating seeds function
+//    *propagating seeds function - yeah!
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
+    walkDelay=600-5*approval*contact;
+
     parseInput();
 
-    //seeds
-    for(int i = 0; i<seeds.size(); i++){
-        int xPos = seeds[i].pos.x;
-        int yPos = seeds[i].pos.y;
-        if(seeds[i].age>600){
-            for(int k = xPos-1; k<=xPos+1; k++){
-                for(int j = yPos-1; j<=yPos+1; j++){
-                    if(k>=0 && j>=0 && k<sqCount && j<sqCount){
-                        if(hasSeed[k][j] == false && ofRandom(10000)>9993){
-                            seeds.push_back(seed(k, j, grid, sqSize));
-                            seeds[seeds.size()-1].child(seeds[i].stems, seeds[i].size, seeds[i].colour, seeds[i].petals, seeds[i].shape);
-                            hasSeed[k][j] = true;
-                        }
-                    }
-                }
-            }
-        }
-        if(seeds[i].health<=0){
-            int x = seeds[i].pos.x;
-            int y = seeds[i].pos.y;
-            hasSeed[x][y]=false;
-            seeds.erase(seeds.begin()+i);
-        }
-        seeds[i].update();
+    seedUpdate();
+
+    //punish loneliness
+    if(lonelyTime>1000){
+        contact--;
+        lonelyTime = 0;
     }
 
+    rain(playerGridX, playerGridY);
+
     //grid movement
-    playerPos.x = grid.x + playerGridX*sqSize + sqSize*0.3;
-    playerPos.y = grid.y + playerGridY*sqSize + sqSize*0.7;
+    playerPos.x = grid.x + playerGridX*sqSize + sqSize*0.5;
+    playerPos.y = grid.y + playerGridY*sqSize + sqSize*0.2;
 }
 
 //--------------------------------------------------------------
@@ -65,19 +51,24 @@ void ofApp::draw(){
 
     drawPlaySpace();
 
-    //player
-    ofPushStyle();
-        ofFill();
-        ofDrawCircle(playerPos.x, playerPos.y, 10);
-    ofPopStyle();
-
     //seeds
     for(int i = 0; i<seeds.size(); i++){
         seeds[i].draw();
     }
 
+    drawPlayer();
+
     joystickDebug();
 
+}
+
+//--------------------------------------------------------------
+void ofApp::rain(int x, int y){
+    for(int i = 0; i<seeds.size(); i++){
+        if(seeds[i].pos.x == x && seeds[i].pos.y == y){
+            seeds[i].health = 255;
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -86,13 +77,6 @@ void ofApp::plantSeed(int x, int y){
         seeds.push_back(seed(x, y, grid, sqSize));
         seeds[seeds.size()-1].plant();
         hasSeed[x][y]=true;
-    }
-    else{
-        for(int i = 0; i<seeds.size(); i++){
-            if(seeds[i].pos.x == x && seeds[i].pos.y == y){
-                seeds[i].health = 255;
-            }
-        }
     }
 }
 
@@ -115,12 +99,80 @@ void ofApp::drawPlaySpace(){
             ofDrawRectangle(grid.x+i*sqSize, grid.y+j*sqSize, sqSize, sqSize);
         }
     }
+    ofPushStyle();
+        ofFill();
+        ofDrawBitmapString("Believer count:", grid.x, grid.y - 40);
+        ofDrawRectangle(grid.x + 130, grid.y - 48, contact*37, 10);
+        ofDrawBitmapString("Worship quality:", grid.x, grid.y - 20);
+        ofDrawRectangle(grid.x + 130, grid.y - 28, approval*37, 10);
+    ofPopStyle();
+}
 
+//--------------------------------------------------------------
+void ofApp::drawPlayer(){
+    //rain
+    ofPushStyle();
+    ofPushMatrix();
+        ofTranslate(0,-5);
+        ofSetColor(0,255,255, ofMap(approval*contact, 0, 100, 90, 255));
+        for(int i = 0; i<3; i++){
+            ofDrawLine(playerPos.x-8+i*7, playerPos.y+10+rainCycle, playerPos.x-8+i*7, playerPos.y+15+rainCycle);
+        }
+        for(int i = 0; i<4; i++){
+            ofDrawLine(playerPos.x-11.5+i*7, playerPos.y+10+rainCycle2, playerPos.x-11.5+i*7, playerPos.y+15+rainCycle2);
+
+        }
+        if(rainCycle2<8) rainCycle2+=0.01;
+        else rainCycle2=0;
+        if(rainCycle<8) rainCycle+=0.01;
+        else rainCycle=0;
+    ofPopStyle();
+
+    //clouds
+    ofPushStyle();
+        ofFill();
+        ofSetColor(211,211,211, ofMap(approval*contact, 0, 100, 90, 255));
+        ofDrawCircle(playerPos, 7);
+        ofDrawCircle(playerPos.x-7, playerPos.y+5, 5);
+        ofDrawCircle(playerPos.x+7, playerPos.y+5, 5);
+        for(int i = 0; i<6; i++){
+            ofDrawCircle(playerPos.x-14+5*i, playerPos.y+8, 3);
+        }
+    ofPopStyle();
+    ofPopMatrix();
+}
+
+//--------------------------------------------------------------
+void ofApp::seedUpdate(){
+    //seeds
+    for(int i = 0; i<seeds.size(); i++){
+        int xPos = seeds[i].pos.x;
+        int yPos = seeds[i].pos.y;
+        if(seeds[i].age>800){
+            for(int k = xPos-1; k<=xPos+1; k++){
+                for(int j = yPos-1; j<=yPos+1; j++){
+                    if(k>=0 && j>=0 && k<sqCount && j<sqCount){
+                        if(hasSeed[k][j] == false && ofRandom(100000)<3){
+                            seeds.push_back(seed(k, j, grid, sqSize));
+                            seeds[seeds.size()-1].child(seeds[i].stems, seeds[i].size, seeds[i].colour, seeds[i].petals, seeds[i].shape);
+                            hasSeed[k][j] = true;
+                        }
+                    }
+                }
+            }
+        }
+        if(seeds[i].health<=0){
+            int x = seeds[i].pos.x;
+            int y = seeds[i].pos.y;
+            hasSeed[x][y]=false;
+            seeds.erase(seeds.begin()+i);
+        }
+        seeds[i].update();
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::parseInput(){
-    //input parsing
     if(delayCool<=0){
 
         if(keyIsDown[356]==1 && playerGridX>0){
@@ -146,6 +198,12 @@ void ofApp::parseInput(){
     if(keyIsDown[32]==1){
         plantSeed(playerGridX, playerGridY);
     }
+    if(keyIsDown[119]==1){
+        if(contact<10){
+            contact=10;
+        }
+    }
+    else if(contact>0) lonelyTime++;
 }
 
 //--------------------------------------------------------------
@@ -164,6 +222,7 @@ void ofApp::joystickDebug(){
     if(keyIsDown[359] == 1){
         ofDrawBitmapString("V", 40, 10);
     }
+    ofDrawBitmapString(walkDelay, 50, 10);
 }
 
 //--------------------------------------------------------------
@@ -173,6 +232,12 @@ void ofApp::keyPressed(int key){
     keyIsDown[key] = true;
     if(key >57000){
         keyIsDown[key-57000] = true;
+    }
+    if(key==97){
+        approval--;
+    }
+    if(key==100){
+        approval++;
     }
 }
 

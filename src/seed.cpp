@@ -35,7 +35,7 @@ void seed::update(){
 
     //make it grow
     age++;
-    health-=0.1;
+    health-=0.05;
 
 }
 
