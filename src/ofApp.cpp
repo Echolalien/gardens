@@ -2,6 +2,12 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+
+    ofSetVerticalSync(true);
+    ofSetFrameRate(60);
+    ofSetBackgroundAuto(true);
+    ofSetBackgroundColor(0);
+
     ofSetColor(255);
     sqSize = 50;
     sqCount = 10;
@@ -10,7 +16,6 @@ void ofApp::setup(){
     playerGridX = 0;
     playerGridY = 0;
     walkDelay = 100;
-}
 
 //to do:
 //    *player movement TICK
@@ -24,10 +29,18 @@ void ofApp::setup(){
 //    *social metrics
 //    *propagating seeds function - yeah!
 
+    //find arduino, wait for init then run setup. change connect value to correct USB port
+    ard.connect("/dev/ttyACM0", 57600);
+    ofAddListener(ard.EInitialized, this, &ofApp::setupArduino);
+    bSetupArduino	= false;
+}
+
 //--------------------------------------------------------------
 void ofApp::update(){
 
     walkDelay=600-5*approval*contact;
+
+    updateArduino();
 
     parseInput();
 
@@ -58,7 +71,7 @@ void ofApp::draw(){
 
     drawPlayer();
 
-    joystickDebug();
+//    joystickDebug();
 
 }
 
@@ -122,9 +135,9 @@ void ofApp::drawPlayer(){
             ofDrawLine(playerPos.x-11.5+i*7, playerPos.y+10+rainCycle2, playerPos.x-11.5+i*7, playerPos.y+15+rainCycle2);
 
         }
-        if(rainCycle2<8) rainCycle2+=0.01;
+        if(rainCycle2<8) rainCycle2+=0.01*debugSpeed;
         else rainCycle2=0;
-        if(rainCycle<8) rainCycle+=0.01;
+        if(rainCycle<8) rainCycle+=0.01*debugSpeed;
         else rainCycle=0;
     ofPopStyle();
 
@@ -152,7 +165,7 @@ void ofApp::seedUpdate(){
             for(int k = xPos-1; k<=xPos+1; k++){
                 for(int j = yPos-1; j<=yPos+1; j++){
                     if(k>=0 && j>=0 && k<sqCount && j<sqCount){
-                        if(hasSeed[k][j] == false && ofRandom(100000)<3){
+                        if(hasSeed[k][j] == false && ofRandom(10000)<3){
                             seeds.push_back(seed(k, j, grid, sqSize));
                             seeds[seeds.size()-1].child(seeds[i].stems, seeds[i].size, seeds[i].colour, seeds[i].petals, seeds[i].shape);
                             hasSeed[k][j] = true;
@@ -169,6 +182,70 @@ void ofApp::seedUpdate(){
         }
         seeds[i].update();
     }
+}
+
+
+//--------------------------------------------------------------
+void ofApp::setupArduino(const int & version) {
+
+    //code adapted from oF firmata example
+    // remove listener because we don't need it anymore
+    ofRemoveListener(ard.EInitialized, this, &ofApp::setupArduino);
+
+    // it is now safe to send commands to the Arduino
+    bSetupArduino = true;
+
+    // print firmware name and version to the console
+    ofLogNotice() << ard.getFirmwareName();
+    ofLogNotice() << "firmata v" << ard.getMajorFirmwareVersion() << "." << ard.getMinorFirmwareVersion();
+
+    // Note: pins A0 - A5 can be used as digital input and output.
+    // Refer to them as pins 14 - 19 if using StandardFirmata from Arduino 1.0.
+    // If using Arduino 0022 or older, then use 16 - 21.
+    // Firmata pin numbering changed in version 2.3 (which is included in Arduino 1.0)
+
+    // set pins A0&1 to analog input to receive EMG data
+    ard.sendAnalogPinReporting(0, ARD_ANALOG);
+    ard.sendAnalogPinReporting(1, ARD_ANALOG);
+
+    // Listen for changes on the analog pins
+    ofAddListener(ard.EAnalogPinChanged, this, &ofApp::analogPinChanged);
+}
+
+//--------------------------------------------------------------
+void ofApp::updateArduino(){
+
+    // update the arduino, get any data or messages.
+    // the call to ard.update() is required
+    ard.update();
+
+
+    //if you need to test setup at hardware level
+//	// do not send anything until the arduino has been set up
+//	if (bSetupArduino) {
+//        // fade the led connected to pin D11
+//		ard.sendPwm(11, (int)(128 + 128 * sin(ofGetElapsedTimef())));   // pwm...
+//	}
+    cout<<ard.getAnalog(10)<< "         " << ard.getAnalog(7) <<endl;
+    if(ard.getAnalog(10)<2100){
+        touch=true;
+    }
+    else{
+        touch=false;
+    }
+
+    approval=(ofMap(ard.getAnalog(7), 0, 1023, 10, 0, true));
+
+}
+
+//--------------------------------------------------------------
+void ofApp::analogPinChanged(const int & pinNum) {
+
+}
+
+//--------------------------------------------------------------
+void ofApp::digitalPinChanged(const int &pinNum){
+
 }
 
 //--------------------------------------------------------------
@@ -192,18 +269,22 @@ void ofApp::parseInput(){
         delayCool=walkDelay;
     }
     else{
-        delayCool--;
+        delayCool-=1*debugSpeed;
     }
 
     if(keyIsDown[32]==1){
         plantSeed(playerGridX, playerGridY);
     }
-    if(keyIsDown[119]==1){
-        if(contact<10){
-            contact=10;
-        }
+//    if(keyIsDown[119]==1){
+//        touch=true;
+//    }
+//    else{
+//        touch=false;
+//    }
+    if(touch==true){
+        contact=10;
     }
-    else if(contact>0) lonelyTime++;
+    else if(contact>0) lonelyTime+=1*debugSpeed;
 }
 
 //--------------------------------------------------------------
@@ -233,11 +314,17 @@ void ofApp::keyPressed(int key){
     if(key >57000){
         keyIsDown[key-57000] = true;
     }
+    if(key==119){
+        keyIsDown[357]=true;
+    }
+    if(key==115){
+        keyIsDown[359]=true;
+    }
     if(key==97){
-        approval--;
+        keyIsDown[356]=true;
     }
     if(key==100){
-        approval++;
+        keyIsDown[358]=true;
     }
 }
 
@@ -249,6 +336,18 @@ void ofApp::keyReleased(int key){
     }
     if(key >57000){
         keyIsDown[key-57000] = false;
+    }
+    if(key==119){
+        keyIsDown[357]=false;
+    }
+    if(key==115){
+        keyIsDown[359]=false;
+    }
+    if(key==97){
+        keyIsDown[356]=false;
+    }
+    if(key==100){
+        keyIsDown[358]=false;
     }
 }
 

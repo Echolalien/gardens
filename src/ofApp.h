@@ -37,6 +37,9 @@ class ofApp : public ofBaseApp{
         float walkDelay;
         ofVec2f joystick;
 
+        //my laptop has a fault where, unless a secondary screen is connected, oF runs at 10x usual speed, meaning i have to control passage of time manually using this float lol
+        float debugSpeed = 10;
+
         //change if sqcount changes!
         bool hasSeed [10][10];
         int playerGridX;
@@ -47,7 +50,19 @@ class ofApp : public ofBaseApp{
         float rainCycle2 = 4;
         vector<seed> seeds;
 
-        float contact = 10;
-        float approval = 10;
+        bool touch = false;
+        int contact = 10;
+        int approval = 10;
         float lonelyTime = 0;
+
+        //firmata code, based on oF firmata example
+        ofArduino	ard;
+        bool		bSetupArduino;			// flag variable for setting up arduino once
+
+    private:
+
+        void setupArduino(const int & version);
+        void digitalPinChanged(const int & pinNum);
+        void analogPinChanged(const int & pinNum);
+        void updateArduino();
 };

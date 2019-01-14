@@ -34,8 +34,8 @@ void seed::propagate(){
 void seed::update(){
 
     //make it grow
-    age++;
-    health-=0.05;
+    age+=1*debugSpeed;
+    health-=0.05*debugSpeed;
 
 }
 

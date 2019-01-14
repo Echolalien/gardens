@@ -24,6 +24,8 @@ public:
     ofColor colour;
     int petals;
     float shape;
+
+    float debugSpeed = 10;
 };
 
 #endif // SEED_H
